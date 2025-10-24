@@ -1,12 +1,5 @@
 import { CheckCircle, Trash2 } from "lucide-react";
-
-interface ActionButtonsProps {
-  contactId: number;
-  isVerified: boolean;
-  isSmallScreen: boolean;
-  onMarkAsVerified: (id: number) => void;
-  onDelete: (id: number) => void;
-}
+import type { ActionButtonsProps } from "../../types";
 
 function ActionButtons({
   contactId,

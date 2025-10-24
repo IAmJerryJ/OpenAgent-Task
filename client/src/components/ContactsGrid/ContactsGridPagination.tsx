@@ -1,13 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface ContactsGridPaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  onPrevious: () => void;
-  onNext: () => void;
-  isSmallScreen: boolean;
-}
+import type { ContactsGridPaginationProps } from "../../types";
 
 function ContactsGridPagination({
   currentPage,

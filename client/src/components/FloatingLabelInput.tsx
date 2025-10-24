@@ -1,18 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-
-interface FloatingLabelInputProps {
-  type?: string;
-  name: string;
-  label: string;
-  value: string;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
-  required?: boolean;
-  rows?: number;
-  className?: string;
-  error?: string;
-}
+import type { FloatingLabelInputProps } from "../types";
 
 function FloatingLabelInput({
   type = "text",

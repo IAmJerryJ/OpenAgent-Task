@@ -10,16 +10,7 @@ import {
   CheckCircle,
   Trash2,
 } from "lucide-react";
-import type { Contact } from "../../api/types";
-
-interface ContactCardProps {
-  contact: Contact;
-  onClose: () => void;
-  formatSydneyTime: (dateString: string) => string;
-  onMarkAsVerified: (id: number) => void;
-  onDelete: (id: number) => void;
-  isSmallScreen: boolean;
-}
+import type { ContactCardProps } from "../../types";
 
 function ContactCard({
   contact,

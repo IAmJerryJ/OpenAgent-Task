@@ -1,11 +1,4 @@
-export interface ContactSeedData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  note: string;
-  verified: boolean;
-}
+import type { ContactSeedData } from "../types";
 
 export const sampleContacts: ContactSeedData[] = [
   {

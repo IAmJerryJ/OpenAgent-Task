@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Info } from "lucide-react";
 import { contactsApi } from "../api";
-import type { Contact } from "../api/types";
+import type { Contact } from "../types";
 import toast from "react-hot-toast";
 import ContactsGridPagination from "./ContactsGrid/ContactsGridPagination";
 import ActionButtons from "./ContactsGrid/ActionButtons";
