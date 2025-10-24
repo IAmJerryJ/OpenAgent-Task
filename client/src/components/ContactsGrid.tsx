@@ -1,78 +1,40 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Trash2 } from "lucide-react";
-
-interface Contact {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  note: string;
-  verified: boolean;
-}
-
-const sampleData: Contact[] = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "123-456-7890",
-    note: "Interested in property investment",
-    verified: false,
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "098-765-4321",
-    note: "Looking for first home",
-    verified: true,
-  },
-  {
-    id: 3,
-    firstName: "Bob",
-    lastName: "Johnson",
-    email: "bob.johnson@example.com",
-    phone: "555-123-4567",
-    note: "Commercial property inquiry",
-    verified: false,
-  },
-  {
-    id: 4,
-    firstName: "Alice",
-    lastName: "Brown",
-    email: "alice.brown@example.com",
-    phone: "444-555-6666",
-    note: "First-time buyer looking for guidance",
-    verified: false,
-  },
-  {
-    id: 5,
-    firstName: "Charlie",
-    lastName: "Wilson",
-    email: "charlie.wilson@example.com",
-    phone: "777-888-9999",
-    note: "Investment property portfolio expansion",
-    verified: true,
-  },
-  {
-    id: 6,
-    firstName: "David",
-    lastName: "Miller",
-    email: "david.miller@example.com",
-    phone: "333-444-5555",
-    note: "Looking for rental property investment opportunitiessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
-    verified: false,
-  },
-];
+import { Info } from "lucide-react";
+import { contactsApi } from "../api";
+import type { Contact } from "../api/types";
+import toast from "react-hot-toast";
+import ContactsGridPagination from "./ContactsGrid/ContactsGridPagination";
+import ActionButtons from "./ContactsGrid/ActionButtons";
+import ContactCard from "./ContactsGrid/ContactCard";
 
 function ContactsGrid() {
-  const [contacts, setContacts] = useState<Contact[]>(sampleData);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const itemsPerPage = isSmallScreen ? 5 : 10;
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [showContactCard, setShowContactCard] = useState(false);
+
+  const formatSydneyTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-AU", {
+      timeZone: "Australia/Sydney",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -85,22 +47,81 @@ function ContactsGrid() {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const handleMarkAsVerified = (id: number) => {
-    setContacts((prev) =>
-      prev.map((contact) =>
-        contact.id === id ? { ...contact, verified: true } : contact
-      )
-    );
+  useEffect(() => {
+    const loadContacts = async () => {
+      try {
+        setLoading(true);
+        const itemsPerPage = isSmallScreen ? 5 : 10;
+        const response = await contactsApi.getContacts(
+          currentPage,
+          itemsPerPage,
+          searchTerm
+        );
+        setContacts(response.contacts);
+        setPagination(response.pagination);
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error && "response" in err
+            ? (err as { response?: { data?: { error?: string } } }).response
+                ?.data?.error
+            : "Failed to load contacts";
+        toast.error(errorMessage || "Failed to load contacts");
+        console.error("Error loading contacts:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadContacts();
+  }, [currentPage, isSmallScreen, searchTerm]);
+
+  const handleMarkAsVerified = async (id: number) => {
+    try {
+      const updatedContact = await contactsApi.verifyContact(id);
+      setContacts((prev) =>
+        prev.map((contact) => (contact.id === id ? updatedContact : contact))
+      );
+      toast.success("Contact verified successfully!");
+    } catch (err: unknown) {
+      console.error("Error verifying contact:", err);
+      const errorMessage =
+        err instanceof Error && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data
+              ?.error
+          : "Failed to verify contact";
+      toast.error(errorMessage || "Failed to verify contact");
+    }
   };
 
-  const handleDelete = (id: number) => {
-    setContacts((prev) => prev.filter((contact) => contact.id !== id));
-  };
+  const handleDelete = async (id: number) => {
+    try {
+      await contactsApi.deleteContact(id);
 
-  const totalPages = Math.ceil(contacts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentContacts = contacts.slice(startIndex, endIndex);
+      if (selectedContact && selectedContact.id === id) {
+        setShowContactCard(false);
+        setSelectedContact(null);
+      }
+
+      const itemsPerPage = isSmallScreen ? 5 : 10;
+      const response = await contactsApi.getContacts(
+        currentPage,
+        itemsPerPage,
+        searchTerm
+      );
+      setContacts(response.contacts);
+      setPagination(response.pagination);
+
+      toast.success("Contact deleted successfully!");
+    } catch (err: unknown) {
+      console.error("Error deleting contact:", err);
+      const errorMessage =
+        err instanceof Error && "response" in err
+          ? (err as { response?: { data?: { error?: string } } }).response?.data
+              ?.error
+          : "Failed to delete contact";
+      toast.error(errorMessage || "Failed to delete contact");
+    }
+  };
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -113,13 +134,67 @@ function ContactsGrid() {
   };
 
   const goToNextPage = () => {
-    if (currentPage < totalPages) {
+    if (currentPage < pagination.totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchTerm(searchInput);
+    setCurrentPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    setCurrentPage(1);
+  };
+
+  const handleInfoClick = (contact: Contact) => {
+    setSelectedContact(contact);
+    setShowContactCard(true);
+  };
+
+  const handleCloseContactCard = () => {
+    setShowContactCard(false);
+    setSelectedContact(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
+      <div className="mb-4">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Search Contacts..."
+            className="input input-bordered flex-1"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <button type="submit" className="btn btn-primary">
+            Search
+          </button>
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="btn btn-outline"
+            >
+              Clear
+            </button>
+          )}
+        </form>
+      </div>
+
       <div className="overflow-x-auto">
         <table
           className="table table-zebra table-fixed w-full border border-gray-300"
@@ -127,6 +202,12 @@ function ContactsGrid() {
         >
           <thead>
             <tr>
+              <th
+                className="text-center sticky left-0 bg-gray-200 z-10 border border-gray-300 px-4 py-3"
+                style={{ width: "50px" }}
+              >
+                Info
+              </th>
               <th
                 className="text-left border border-gray-300 px-4 py-3"
                 style={{ width: "150px" }}
@@ -158,6 +239,18 @@ function ContactsGrid() {
                 Note
               </th>
               <th
+                className="text-left border border-gray-300 px-4 py-3"
+                style={{ width: "200px" }}
+              >
+                Created At
+              </th>
+              <th
+                className="text-left border border-gray-300 px-4 py-3"
+                style={{ width: "200px" }}
+              >
+                Updated At
+              </th>
+              <th
                 className="text-center sticky right-0 bg-gray-200 z-10 whitespace-nowrap px-4 border border-gray-300"
                 style={{
                   width: isSmallScreen ? "120px" : "250px",
@@ -168,8 +261,20 @@ function ContactsGrid() {
             </tr>
           </thead>
           <tbody>
-            {currentContacts.map((contact) => (
+            {contacts.map((contact: Contact) => (
               <tr key={contact.id} className="hover">
+                <td
+                  className="text-center sticky left-0 bg-gray-200 z-10 border border-gray-300 px-4 py-3"
+                  style={{ width: "20px" }}
+                >
+                  <button
+                    onClick={() => handleInfoClick(contact)}
+                    className="btn btn-sm btn-link btn-info w-5 h-5 p-0 hover:text-blue-600"
+                    title="View Details"
+                  >
+                    <Info className="w-5 h-5" />
+                  </button>
+                </td>
                 <td
                   className="font-medium border border-gray-300 px-4 py-3 truncate"
                   style={{ width: "120px" }}
@@ -206,58 +311,32 @@ function ContactsGrid() {
                   {contact.note}
                 </td>
                 <td
+                  className="text-sm border border-gray-300 px-4 py-3"
+                  style={{ width: "180px" }}
+                  title={formatSydneyTime(contact.createdAt)}
+                >
+                  {formatSydneyTime(contact.createdAt)}
+                </td>
+                <td
+                  className="text-sm border border-gray-300 px-4 py-3"
+                  style={{ width: "180px" }}
+                  title={formatSydneyTime(contact.updatedAt)}
+                >
+                  {formatSydneyTime(contact.updatedAt)}
+                </td>
+                <td
                   className="text-right sticky right-0 bg-gray-200 z-10 whitespace-nowrap px-4 border border-gray-300"
                   style={{
                     width: isSmallScreen ? "120px" : "250px",
                   }}
                 >
-                  <div className="flex gap-2 justify-between">
-                    {isSmallScreen ? (
-                      <>
-                        <button
-                          onClick={() => handleMarkAsVerified(contact.id)}
-                          disabled={contact.verified}
-                          className={`btn btn-sm btn-square w-10 h-10 ${
-                            contact.verified
-                              ? "btn-success cursor-not-allowed"
-                              : "btn-primary"
-                          }`}
-                          title={
-                            contact.verified ? "Verified" : "Mark as Verified"
-                          }
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(contact.id)}
-                          className="btn btn-sm btn-square btn-error w-10 h-10"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleMarkAsVerified(contact.id)}
-                          disabled={contact.verified}
-                          className={`btn btn-sm w-32 ${
-                            contact.verified
-                              ? "btn-success cursor-not-allowed"
-                              : "btn-primary"
-                          }`}
-                        >
-                          {contact.verified ? "Verified" : "Mark as Verified"}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(contact.id)}
-                          className="btn btn-sm btn-error w-20"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  <ActionButtons
+                    contactId={contact.id}
+                    isVerified={contact.verified}
+                    isSmallScreen={isSmallScreen}
+                    onMarkAsVerified={handleMarkAsVerified}
+                    onDelete={handleDelete}
+                  />
                 </td>
               </tr>
             ))}
@@ -265,44 +344,35 @@ function ContactsGrid() {
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-6 gap-2">
-          <button
-            onClick={goToPreviousPage}
-            disabled={currentPage === 1}
-            className="btn btn-sm btn-outline"
-          >
-            Previous
-          </button>
-
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`btn btn-sm ${
-                  currentPage === page ? "btn-primary" : "btn-outline"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-            className="btn btn-sm btn-outline"
-          >
-            Next
-          </button>
+      {pagination.totalPages > 1 && (
+        <div className="mt-6">
+          <ContactsGridPagination
+            currentPage={currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={goToPage}
+            onPrevious={goToPreviousPage}
+            onNext={goToNextPage}
+            isSmallScreen={isSmallScreen}
+          />
         </div>
       )}
 
       <div className="text-center mt-4 text-sm text-gray-600">
-        Showing {startIndex + 1} to {Math.min(endIndex, contacts.length)} of{" "}
-        {contacts.length} contacts
+        Showing {(currentPage - 1) * pagination.itemsPerPage + 1} to{" "}
+        {Math.min(currentPage * pagination.itemsPerPage, pagination.totalItems)}{" "}
+        of {pagination.totalItems} contacts
       </div>
+
+      {showContactCard && selectedContact && (
+        <ContactCard
+          contact={selectedContact}
+          onClose={handleCloseContactCard}
+          formatSydneyTime={formatSydneyTime}
+          onMarkAsVerified={handleMarkAsVerified}
+          onDelete={handleDelete}
+          isSmallScreen={isSmallScreen}
+        />
+      )}
     </div>
   );
 }
