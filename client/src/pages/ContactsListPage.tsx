@@ -1,4 +1,4 @@
-import ContactsGrid from "../components/ContactsGrid";
+import ContactsGrid from "@/components/ContactsGrid/ContactsGrid";
 
 function ContactsListPage() {
   return (

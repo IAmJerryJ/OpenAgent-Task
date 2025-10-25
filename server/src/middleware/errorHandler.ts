@@ -1,47 +1,51 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
-export const errorHandler = (
-  error: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorHandler = (error: unknown, req: Request, res: Response) => {
   console.error("Error:", error);
 
-  if (error.name === "SequelizeUniqueConstraintError") {
+  if (
+    error instanceof Error &&
+    error.name === "SequelizeUniqueConstraintError"
+  ) {
     return res.status(400).json({
-      error: "Duplicate entry. This email already exists.",
+      error:
+        "Duplicate entry. This email and phone combination already exists.",
     });
   }
 
-  if (error.name === "SequelizeValidationError") {
+  if (error instanceof Error && error.name === "SequelizeValidationError") {
     return res.status(400).json({
       error: "Validation error",
-      details: error.errors.map((err: any) => ({
+      details: (error as any).errors.map((err: any) => ({
         field: err.path,
         message: err.message,
       })),
     });
   }
 
-  if (error.name === "SequelizeForeignKeyConstraintError") {
+  if (
+    error instanceof Error &&
+    error.name === "SequelizeForeignKeyConstraintError"
+  ) {
     return res.status(400).json({
       error: "Foreign key constraint error",
     });
   }
 
-  if (error.name === "SequelizeConnectionError") {
+  if (error instanceof Error && error.name === "SequelizeConnectionError") {
     return res.status(500).json({
       error: "Database connection error",
     });
   }
 
-  const statusCode = error.statusCode || 500;
-  const message = error.message || "Internal server error";
+  const statusCode = (error as any).statusCode || 500;
+  const message =
+    error instanceof Error ? error.message : "Internal server error";
 
   res.status(statusCode).json({
     error: message,
-    ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
+    ...(process.env.NODE_ENV === "development" &&
+      error instanceof Error && { stack: error.stack }),
   });
 };
 

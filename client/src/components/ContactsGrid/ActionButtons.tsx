@@ -1,5 +1,6 @@
 import { CheckCircle, Trash2 } from "lucide-react";
-import type { ActionButtonsProps } from "../../types";
+
+import type { ActionButtonsProps } from "@/types";
 
 function ActionButtons({
   contactId,

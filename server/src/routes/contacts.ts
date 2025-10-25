@@ -1,5 +1,12 @@
 import express from "express";
-import { ContactController } from "../controllers/contactController";
+import {
+  getContactsController,
+  getContactByIdController,
+  createContactController,
+  updateContactController,
+  verifyContactController,
+  deleteContactController,
+} from "../controllers/contactController";
 import {
   createContactSchema,
   updateContactSchema,
@@ -13,43 +20,30 @@ import {
 } from "../middleware/zodValidation";
 
 const router = express.Router();
-const contactController = new ContactController();
 
-router.get(
-  "/",
-  validateQuery(queryParamsSchema),
-  contactController.getContacts
-);
+router.get("/", validateQuery(queryParamsSchema), getContactsController);
 
-router.get(
-  "/:id",
-  validateParams(idParamSchema),
-  contactController.getContactById
-);
+router.get("/:id", validateParams(idParamSchema), getContactByIdController);
 
 router.post(
   "/",
   validateAndTransform(createContactSchema),
-  contactController.createContact
+  createContactController
 );
 
 router.put(
   "/:id",
   validateParams(idParamSchema),
   validateAndTransform(updateContactSchema),
-  contactController.updateContact
+  updateContactController
 );
 
 router.patch(
   "/:id/verify",
   validateParams(idParamSchema),
-  contactController.verifyContact
+  verifyContactController
 );
 
-router.delete(
-  "/:id",
-  validateParams(idParamSchema),
-  contactController.deleteContact
-);
+router.delete("/:id", validateParams(idParamSchema), deleteContactController);
 
 export default router;

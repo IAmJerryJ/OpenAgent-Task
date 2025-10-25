@@ -5,12 +5,14 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "start:dev": "node dist/server.js",
-    "dev": "nodemon --watch src --ext ts --exec \"tsc && node dist/server.js\"",
+    "dev": "set SEED_MODE=none&& nodemon --watch src --ext ts --exec \"tsc && node dist/server.js\"",
+    "dev:seed": "set SEED_MODE=seed&& nodemon --watch src --ext ts --exec \"tsc && node dist/server.js\"",
     "dev:reset": "set SEED_MODE=reset&& nodemon --watch src --ext ts --exec \"tsc && node dist/server.js\"",
-    "dev:build": "nodemon --exec \"tsc && node dist/server.js\"",
-    "dev:build:reset": "set SEED_MODE=reset&& nodemon --exec \"tsc && node dist/server.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "author": "",
   "license": "ISC",
@@ -27,11 +29,18 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.9.1",
+    "@types/sequelize": "^4.28.20",
+    "eslint": "^9.38.0",
     "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "sequelize-mock": "^0.10.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "vitest": "^4.0.3"
   }
 }

@@ -1,4 +1,3 @@
-import { Request } from "express";
 import { QueryParams, IdParam } from "../schemas/contactSchemas";
 
 declare global {

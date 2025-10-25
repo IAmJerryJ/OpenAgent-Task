@@ -15,19 +15,18 @@ export const contactFormSchema = z.object({
     .email("Invalid email format")
     .min(1, "Email is required")
     .max(100, "Email must be 100 characters or less")
-    .transform((val) => val.toLowerCase().trim()),
+    .transform(val => val.toLowerCase().trim()),
   phone: z
     .string()
     .min(1, "Phone number is required")
-    .min(10, "Phone number must be at least 10 characters")
     .max(20, "Phone number must be 20 characters or less")
     .regex(/^[\d\s\-+()]+$/, "Phone number contains invalid characters")
     .trim(),
   message: z
     .string()
-    .min(1, "Message is required")
     .max(500, "Message must be 500 characters or less")
-    .trim(),
+    .trim()
+    .optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -52,7 +51,7 @@ export const validateContactForm = (
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: ContactFormErrors = {};
-      error.issues.forEach((err) => {
+      error.issues.forEach(err => {
         const field = err.path[0] as keyof ContactFormData;
         if (field) {
           errors[field] = err.message;

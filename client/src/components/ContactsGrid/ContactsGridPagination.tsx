@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { ContactsGridPaginationProps } from "../../types";
+
+import type { ContactsGridPaginationProps } from "@/types";
 
 function ContactsGridPagination({
   currentPage,
@@ -8,6 +9,8 @@ function ContactsGridPagination({
   onPrevious,
   onNext,
   isSmallScreen,
+  totalItems,
+  itemsPerPage,
 }: ContactsGridPaginationProps) {
   const generatePageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -55,43 +58,51 @@ function ContactsGridPagination({
   const pageNumbers = generatePageNumbers();
 
   return (
-    <div className="flex justify-center items-center gap-1 sm:gap-2">
-      <button
-        onClick={onPrevious}
-        disabled={currentPage === 1}
-        className="btn btn-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Previous page"
-      >
-        {isSmallScreen ? <ChevronLeft className="w-4 h-4" /> : "Previous"}
-      </button>
+    <div>
+      <div className="flex justify-center items-center gap-1 sm:gap-2">
+        <button
+          onClick={onPrevious}
+          disabled={currentPage === 1}
+          className="btn btn-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Previous page"
+        >
+          {isSmallScreen ? <ChevronLeft className="w-4 h-4" /> : "Previous"}
+        </button>
 
-      <div className="flex gap-1">
-        {pageNumbers.map((page, index) => (
-          <div key={index}>
-            {page === "..." ? (
-              <span className="btn btn-sm btn-disabled">...</span>
-            ) : (
-              <button
-                onClick={() => onPageChange(page as number)}
-                className={`btn btn-sm ${
-                  currentPage === page ? "btn-primary" : "btn-outline"
-                }`}
-              >
-                {page}
-              </button>
-            )}
-          </div>
-        ))}
+        <div className="flex gap-1">
+          {pageNumbers.map((page, index) => (
+            <div key={index}>
+              {page === "..." ? (
+                <span className="btn btn-sm btn-disabled">...</span>
+              ) : (
+                <button
+                  onClick={() => onPageChange(page as number)}
+                  className={`btn btn-sm ${
+                    currentPage === page ? "btn-primary" : "btn-outline"
+                  }`}
+                >
+                  {page}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onNext}
+          disabled={currentPage === totalPages}
+          className="btn btn-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Next page"
+        >
+          {isSmallScreen ? <ChevronRight className="w-4 h-4" /> : "Next"}
+        </button>
       </div>
 
-      <button
-        onClick={onNext}
-        disabled={currentPage === totalPages}
-        className="btn btn-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
-        title="Next page"
-      >
-        {isSmallScreen ? <ChevronRight className="w-4 h-4" /> : "Next"}
-      </button>
+      <div className="text-center mt-4 text-sm text-gray-600">
+        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+        {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}{" "}
+        contacts
+      </div>
     </div>
   );
 }

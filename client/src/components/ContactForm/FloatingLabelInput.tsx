@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import type { FloatingLabelInputProps } from "../types";
+
+import type { FloatingLabelInputProps } from "@/types";
 
 function FloatingLabelInput({
   type = "text",
@@ -38,8 +39,8 @@ function FloatingLabelInput({
       error
         ? "border-red-500 focus:ring-red-500"
         : isFloating
-        ? "border-green-500 focus:ring-green-500"
-        : "border-gray-300 focus:border-green-500 focus:ring-green-500"
+          ? "border-green-500 focus:ring-green-500"
+          : "border-gray-300 focus:border-green-500 focus:ring-green-500"
     }
     ${className}
   `;
@@ -80,7 +81,6 @@ function FloatingLabelInput({
           onChange={onChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          required={required}
           rows={rows || 4}
           className={textareaClasses}
         />

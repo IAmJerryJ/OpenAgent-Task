@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres:17-alpine
+    container_name: contact-app-db
+    environment:
+      POSTGRES_DB: contactapp
+      POSTGRES_USER: contactuser
+      POSTGRES_PASSWORD: contactpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - contact-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contactuser -d contactapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: contact-app-server
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: contactapp
+      DB_USER: contactuser
+      DB_PASSWORD: contactpass
+    ports:
+      - "3000:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - contact-network
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: contact-app-client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - contact-network
+    restart: unless-stopped
+
+networks:
+  contact-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

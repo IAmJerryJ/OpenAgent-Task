@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { ContactIcon, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

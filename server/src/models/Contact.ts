@@ -1,34 +1,21 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
 
-interface ContactAttributes {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  note: string;
-  verified: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-interface ContactCreationAttributes
-  extends Optional<
-    ContactAttributes,
-    "id" | "verified" | "createdAt" | "updatedAt"
-  > {}
+import {
+  ContactModelAttributes,
+  ContactModelCreationAttributes,
+} from "../types/contact";
 
 class Contact
-  extends Model<ContactAttributes, ContactCreationAttributes>
-  implements ContactAttributes
+  extends Model<ContactModelAttributes, ContactModelCreationAttributes>
+  implements ContactModelAttributes
 {
   public id!: number;
   public firstName!: string;
   public lastName!: string;
   public email!: string;
   public phone!: string;
-  public note!: string;
+  public note?: string;
   public verified!: boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -60,7 +47,6 @@ Contact.init(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       validate: {
         isEmail: true,
         notEmpty: true,
@@ -71,7 +57,7 @@ Contact.init(
       allowNull: false,
       validate: {
         notEmpty: true,
-        len: [10, 20],
+        len: [1, 20],
       },
     },
     note: {
@@ -92,7 +78,8 @@ Contact.init(
     indexes: [
       {
         unique: true,
-        fields: ["email"],
+        fields: ["email", "phone"],
+        name: "unique_email_phone",
       },
     ],
   }

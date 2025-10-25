@@ -5,126 +5,132 @@ import {
   UpdateContactInput,
 } from "../schemas/contactSchemas";
 
-export class ContactService {
-  async getContacts(page: number, limit: number, search?: string) {
-    const offset = (page - 1) * limit;
+export const getContactsService = async (
+  page: number,
+  limit: number,
+  search?: string
+) => {
+  const offset = (page - 1) * limit;
 
-    let whereClause = {};
-    if (search) {
-      whereClause = {
-        [Op.or]: [
-          { firstName: { [Op.iLike]: `%${search}%` } },
-          { lastName: { [Op.iLike]: `%${search}%` } },
-          { email: { [Op.iLike]: `%${search}%` } },
-          { phone: { [Op.iLike]: `%${search}%` } },
-        ],
-      };
-    }
-
-    const { count, rows } = await Contact.findAndCountAll({
-      where: whereClause,
-      limit,
-      offset,
-      order: [["id", "DESC"]],
-    });
-
-    return {
-      contacts: rows,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(count / limit),
-        totalItems: count,
-        itemsPerPage: limit,
-      },
+  let whereClause = {};
+  if (search) {
+    whereClause = {
+      [Op.or]: [
+        { firstName: { [Op.iLike]: `%${search}%` } },
+        { lastName: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } },
+        { phone: { [Op.iLike]: `%${search}%` } },
+        { note: { [Op.iLike]: `%${search}%` } },
+      ],
     };
   }
 
-  async getContactById(id: number) {
-    return await Contact.findByPk(id);
+  const { count, rows } = await Contact.findAndCountAll({
+    where: whereClause,
+    limit,
+    offset,
+    order: [["id", "DESC"]],
+  });
+
+  return {
+    contacts: rows,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      itemsPerPage: limit,
+    },
+  };
+};
+
+export const getContactByIdService = async (id: number) => {
+  return await Contact.findByPk(id);
+};
+
+export const createContactService = async (contactData: CreateContactInput) => {
+  return await Contact.create({
+    firstName: contactData.firstName,
+    lastName: contactData.lastName,
+    email: contactData.email,
+    phone: contactData.phone,
+    note: contactData.note || "",
+    verified: false,
+  });
+};
+
+export const updateContactService = async (
+  id: number,
+  contactData: UpdateContactInput
+) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) {
+    throw new Error("Contact not found");
   }
 
-  async createContact(contactData: CreateContactInput) {
-    return await Contact.create({
-      firstName: contactData.firstName,
-      lastName: contactData.lastName,
-      email: contactData.email,
-      phone: contactData.phone,
-      note: contactData.note || "",
-      verified: false,
-    });
+  await contact.update(contactData);
+  return contact;
+};
+
+export const verifyContactService = async (id: number) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) {
+    throw new Error("Contact not found");
   }
 
-  async updateContact(id: number, contactData: UpdateContactInput) {
-    const contact = await Contact.findByPk(id);
-    if (!contact) {
-      throw new Error("Contact not found");
-    }
+  await contact.update({ verified: true });
+  return contact;
+};
 
-    await contact.update(contactData);
-    return contact;
+export const deleteContactService = async (id: number) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) {
+    throw new Error("Contact not found");
   }
 
-  async verifyContact(id: number) {
-    const contact = await Contact.findByPk(id);
-    if (!contact) {
-      throw new Error("Contact not found");
-    }
+  await contact.destroy();
+};
 
-    await contact.update({ verified: true });
-    return contact;
-  }
+export const getContactStatsService = async () => {
+  const totalContacts = await Contact.count();
+  const verifiedContacts = await Contact.count({ where: { verified: true } });
+  const unverifiedContacts = totalContacts - verifiedContacts;
 
-  async deleteContact(id: number) {
-    const contact = await Contact.findByPk(id);
-    if (!contact) {
-      throw new Error("Contact not found");
-    }
+  return {
+    total: totalContacts,
+    verified: verifiedContacts,
+    unverified: unverifiedContacts,
+  };
+};
 
-    await contact.destroy();
-  }
+export const searchContactsService = async (
+  searchTerm: string,
+  page: number = 1,
+  limit: number = 10
+) => {
+  const offset = (page - 1) * limit;
 
-  async getContactStats() {
-    const totalContacts = await Contact.count();
-    const verifiedContacts = await Contact.count({ where: { verified: true } });
-    const unverifiedContacts = totalContacts - verifiedContacts;
+  const { count, rows } = await Contact.findAndCountAll({
+    where: {
+      [Op.or]: [
+        { firstName: { [Op.iLike]: `%${searchTerm}%` } },
+        { lastName: { [Op.iLike]: `%${searchTerm}%` } },
+        { email: { [Op.iLike]: `%${searchTerm}%` } },
+        { phone: { [Op.iLike]: `%${searchTerm}%` } },
+        { note: { [Op.iLike]: `%${searchTerm}%` } },
+      ],
+    },
+    limit,
+    offset,
+    order: [["id", "DESC"]],
+  });
 
-    return {
-      total: totalContacts,
-      verified: verifiedContacts,
-      unverified: unverifiedContacts,
-    };
-  }
-
-  async searchContacts(
-    searchTerm: string,
-    page: number = 1,
-    limit: number = 10
-  ) {
-    const offset = (page - 1) * limit;
-
-    const { count, rows } = await Contact.findAndCountAll({
-      where: {
-        [Op.or]: [
-          { firstName: { [Op.iLike]: `%${searchTerm}%` } },
-          { lastName: { [Op.iLike]: `%${searchTerm}%` } },
-          { email: { [Op.iLike]: `%${searchTerm}%` } },
-          { phone: { [Op.iLike]: `%${searchTerm}%` } },
-          { note: { [Op.iLike]: `%${searchTerm}%` } },
-        ],
-      },
-      limit,
-      offset,
-      order: [["id", "DESC"]],
-    });
-
-    return {
-      contacts: rows,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(count / limit),
-        totalItems: count,
-        itemsPerPage: limit,
-      },
-    };
-  }
-}
+  return {
+    contacts: rows,
+    pagination: {
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+      totalItems: count,
+      itemsPerPage: limit,
+    },
+  };
+};

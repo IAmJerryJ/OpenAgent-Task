@@ -19,7 +19,7 @@ export const seedDatabase = async () => {
 
   try {
     const existingContacts = await Contact.count();
-    const seedMode = process.env.SEED_MODE || "skip";
+    const seedMode = process.env.SEED_MODE || "none";
 
     if (seedMode === "reset") {
       console.log(
@@ -30,10 +30,10 @@ export const seedDatabase = async () => {
       console.log(
         `Reset seeded ${sampleContacts.length} contacts successfully!`
       );
-    } else if (seedMode === "skip") {
+    } else if (seedMode === "seed") {
       if (existingContacts === 0) {
         console.log(
-          "Development environment (SKIP mode): Database is empty, seeding with sample data..."
+          "Development environment (SEED mode): Seeding database with sample data..."
         );
         await Contact.bulkCreate(sampleContacts);
         console.log(`Seeded ${sampleContacts.length} contacts successfully!`);
@@ -42,9 +42,13 @@ export const seedDatabase = async () => {
           `Database already contains ${existingContacts} contacts, skipping seed.`
         );
       }
+    } else if (seedMode === "none") {
+      console.log(
+        "Development environment (NONE mode): No seed data injection."
+      );
     } else {
       console.log(
-        `Unknown SEED_MODE: ${seedMode}. Valid options: 'reset' or 'skip'`
+        `Unknown SEED_MODE: ${seedMode}. Valid options: 'reset', 'seed', or 'none'`
       );
     }
   } catch (error) {

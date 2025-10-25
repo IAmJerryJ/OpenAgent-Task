@@ -3,7 +3,6 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import sequelize from "./config/database";
-import Contact from "./models/Contact";
 import contactsRouter from "./routes/contacts";
 import { seedDatabase } from "./seeders/sampleData";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
@@ -12,6 +11,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SEED_MODE = process.env.SEED_MODE || "none";
 
 app.use(helmet());
 app.use(cors());
@@ -40,10 +40,20 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log("Database connection has been established successfully.");
 
-    await sequelize.sync({ alter: true });
+    const isResetMode = SEED_MODE === "reset";
+
+    if (isResetMode) {
+      console.log("Reset mode detected. Dropping all tables...");
+      await sequelize.drop();
+      console.log("All tables dropped successfully.");
+    }
+
+    await sequelize.sync({ force: isResetMode, alter: !isResetMode });
     console.log("Database models synchronized.");
 
-    await seedDatabase();
+    if (SEED_MODE !== "none") {
+      await seedDatabase();
+    }
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);

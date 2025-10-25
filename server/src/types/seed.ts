@@ -3,6 +3,6 @@ export interface ContactSeedData {
   lastName: string;
   email: string;
   phone: string;
-  note: string;
+  note?: string;
   verified: boolean;
 }

@@ -1,56 +1,56 @@
-import apiClient from "./config";
+import apiClient from "@/lib/axios";
 import type {
   Contact,
   ContactCreateData,
   ContactUpdateData,
   ContactsResponse,
-} from "./types";
+} from "@/types";
 
-export const contactsApi = {
-  getContacts: async (
-    page: number = 1,
-    limit: number = 10,
-    search?: string
-  ): Promise<ContactsResponse> => {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+const CONTACTS_URL = "/api/contacts";
 
-    if (search) {
-      params.append("search", search);
-    }
+export const httpGetContacts = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string
+): Promise<ContactsResponse> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
 
-    const response = await apiClient.get(`/api/contacts?${params.toString()}`);
-    return response.data;
-  },
+  if (search) {
+    params.append("search", search);
+  }
 
-  getContactById: async (id: number): Promise<Contact> => {
-    const response = await apiClient.get(`/api/contacts/${id}`);
-    return response.data;
-  },
-
-  createContact: async (contactData: ContactCreateData): Promise<Contact> => {
-    const response = await apiClient.post("/api/contacts", contactData);
-    return response.data;
-  },
-
-  updateContact: async (
-    id: number,
-    contactData: ContactUpdateData
-  ): Promise<Contact> => {
-    const response = await apiClient.put(`/api/contacts/${id}`, contactData);
-    return response.data;
-  },
-
-  verifyContact: async (id: number): Promise<Contact> => {
-    const response = await apiClient.patch(`/api/contacts/${id}/verify`);
-    return response.data;
-  },
-
-  deleteContact: async (id: number): Promise<void> => {
-    await apiClient.delete(`/api/contacts/${id}`);
-  },
+  const response = await apiClient.get(`${CONTACTS_URL}?${params.toString()}`);
+  return response.data;
 };
 
-export default contactsApi;
+export const httpGetContactById = async (id: number): Promise<Contact> => {
+  const response = await apiClient.get(`${CONTACTS_URL}/${id}`);
+  return response.data;
+};
+
+export const httpCreateContact = async (
+  contactData: ContactCreateData
+): Promise<Contact> => {
+  const response = await apiClient.post(CONTACTS_URL, contactData);
+  return response.data;
+};
+
+export const httpUpdateContact = async (
+  id: number,
+  contactData: ContactUpdateData
+): Promise<Contact> => {
+  const response = await apiClient.put(`${CONTACTS_URL}/${id}`, contactData);
+  return response.data;
+};
+
+export const httpVerifyContact = async (id: number): Promise<Contact> => {
+  const response = await apiClient.patch(`${CONTACTS_URL}/${id}/verify`);
+  return response.data;
+};
+
+export const httpDeleteContact = async (id: number): Promise<void> => {
+  await apiClient.delete(`${CONTACTS_URL}/${id}`);
+};

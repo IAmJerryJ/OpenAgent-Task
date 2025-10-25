@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { contactsApi } from "../api";
-import FloatingLabelInput from "./FloatingLabelInput";
 import toast from "react-hot-toast";
+
+import { httpCreateContact } from "@/api/contacts";
 import {
   validateContactForm,
   type ContactFormData,
   type ContactFormErrors,
-} from "../schemas/contactSchemas";
+} from "@/lib/validation";
+import { CONTACT_FORM_FIELDS } from "@/constants/ContactFormFields";
+
+import FloatingLabelInput from "./FloatingLabelInput";
 
 function ContactForm() {
   const navigate = useNavigate();
@@ -16,7 +19,7 @@ function ContactForm() {
     lastName: "",
     email: "",
     phone: "",
-    message: "",
+    message: undefined,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ContactFormErrors>({});
@@ -33,13 +36,13 @@ function ContactForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
 
     if (errors[name as keyof ContactFormErrors]) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         [name]: undefined,
       }));
@@ -69,7 +72,7 @@ function ContactForm() {
     }
 
     try {
-      await contactsApi.createContact({
+      await httpCreateContact({
         firstName: validation.data!.firstName,
         lastName: validation.data!.lastName,
         email: validation.data!.email,
@@ -100,56 +103,19 @@ function ContactForm() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <FloatingLabelInput
-            type="text"
-            name="firstName"
-            label="First name"
-            value={formData.firstName}
-            onChange={handleInputChange}
-            required
-            error={errors.firstName}
-          />
-
-          <FloatingLabelInput
-            type="text"
-            name="lastName"
-            label="Last name"
-            value={formData.lastName}
-            onChange={handleInputChange}
-            required
-            error={errors.lastName}
-          />
-
-          <FloatingLabelInput
-            type="email"
-            name="email"
-            label="Email address"
-            value={formData.email}
-            onChange={handleInputChange}
-            required
-            error={errors.email}
-          />
-
-          <FloatingLabelInput
-            type="tel"
-            name="phone"
-            label="Phone number"
-            value={formData.phone}
-            onChange={handleInputChange}
-            required
-            error={errors.phone}
-          />
-
-          <FloatingLabelInput
-            type="textarea"
-            name="message"
-            label="What do you want to speak to us about"
-            value={formData.message}
-            onChange={handleInputChange}
-            rows={4}
-            required
-            error={errors.message}
-          />
+          {CONTACT_FORM_FIELDS.map(field => (
+            <FloatingLabelInput
+              key={field.name}
+              type={field.type}
+              name={field.name}
+              label={field.label}
+              value={formData[field.name] || ""}
+              onChange={handleInputChange}
+              required={field.required}
+              error={errors[field.name]}
+              rows={field.rows}
+            />
+          ))}
 
           <button
             type="submit"
