@@ -20,7 +20,7 @@ This project is for the OpenAgent Take Home Assessment. It includes a "Contact U
 
 **Validation:** Zod
 
-**Testing:** Vitest, MSW (Mock Service Worker)
+**Testing:** Vitest
 
 **Containerization:** Docker, Docker Compose
 
