@@ -10,6 +10,10 @@ DB_USER=postgres
 DB_PASSWORD=password
 PORT=3000
 NODE_ENV=development # "development" or "production"
+SEED_MODE=none # "seed" or "reset" or "none"; Default is "none";
+# If SEED_MODE is "seed", the database will be seeded with 50 sample contacts data only if the database is empty;
+# If SEED_MODE is "reset", the database will be reset and seeded with 50 sample contacts data;
+# If SEED_MODE is "none", the database will not be seeded with sample data;
 ```
 
 ## Available Scripts
