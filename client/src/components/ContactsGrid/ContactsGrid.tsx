@@ -165,20 +165,18 @@ function ContactsGrid() {
         onDelete={handleDelete}
       />
 
-      {pagination.totalPages > 1 && (
-        <div className="mt-6">
-          <ContactsGridPagination
-            currentPage={currentPage}
-            totalPages={pagination.totalPages}
-            onPageChange={goToPage}
-            onPrevious={goToPreviousPage}
-            onNext={goToNextPage}
-            isSmallScreen={isSmallScreen}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
-          />
-        </div>
-      )}
+      <div className="mt-6">
+        <ContactsGridPagination
+          currentPage={currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={goToPage}
+          onPrevious={goToPreviousPage}
+          onNext={goToNextPage}
+          isSmallScreen={isSmallScreen}
+          totalItems={pagination.totalItems}
+          itemsPerPage={pagination.itemsPerPage}
+        />
+      </div>
 
       {showContactCard && selectedContact && (
         <ContactCard

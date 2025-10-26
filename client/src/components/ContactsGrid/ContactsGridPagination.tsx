@@ -90,7 +90,7 @@ function ContactsGridPagination({
 
         <button
           onClick={onNext}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages}
           className="btn btn-sm btn-outline disabled:opacity-50 disabled:cursor-not-allowed"
           title="Next page"
         >
