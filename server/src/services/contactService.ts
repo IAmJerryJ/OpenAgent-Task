@@ -90,18 +90,6 @@ export const deleteContactService = async (id: number) => {
   await contact.destroy();
 };
 
-export const getContactStatsService = async () => {
-  const totalContacts = await Contact.count();
-  const verifiedContacts = await Contact.count({ where: { verified: true } });
-  const unverifiedContacts = totalContacts - verifiedContacts;
-
-  return {
-    total: totalContacts,
-    verified: verifiedContacts,
-    unverified: unverifiedContacts,
-  };
-};
-
 export const searchContactsService = async (
   searchTerm: string,
   page: number = 1,

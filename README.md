@@ -7,6 +7,7 @@ This project is for the OpenAgent Take Home Assessment. It includes a "Contact U
 - [Tech Stack](#tech-stack)
 - [Quick Start (Without Docker)](#quick-start-without-docker)
 - [Quick Start (With Docker)](#quick-start-with-docker)
+- [Assumptions](#assumptions)
 
 ## Tech Stack
 
@@ -30,6 +31,14 @@ This project is for the OpenAgent Take Home Assessment. It includes a "Contact U
 
 ### Start from Root Directory
 
+- Create a new PostgreSQL database with following credentials:
+
+  - Host: `localhost`
+  - Port: `5432`
+  - Database Name: `openagent_task_db`
+  - Username: `postgres`
+  - Password: `password`
+
 - Add environment variables
 
 Create `.env` file under `./client/` and `./server/`
@@ -51,10 +60,9 @@ DB_PASSWORD=password
 PORT=3000
 NODE_ENV=development # "development" or "production"
 SEED_MODE=none # "seed" or "reset" or "none"; Default is "none";
-# If SEED_MODE is "seed", the database will be seeded with sample data only if the database is empty;
-# If SEED_MODE is "reset", the database will be reset and seeded with sample data;
+# If SEED_MODE is "seed", the database will be seeded with 50 sample contacts data only if the database is empty;
+# If SEED_MODE is "reset", the database will be reset and seeded with 50 sample contacts data;
 # If SEED_MODE is "none", the database will not be seeded with sample data;
-
 ```
 
 - Install dependencies
@@ -124,7 +132,7 @@ localhost:5432 # Database
 
 ### Start from Root Directory
 
-- Development mode (Hot reload) with seeding data only if database is empty
+- Development mode (Hot reload) with seeding 50 sample contacts data only if database is empty
 
 ```bash
 docker-compose -f docker-compose.dev.yml up -d --build # Build and Start All Docker Containers
@@ -167,3 +175,23 @@ docker-compose build client # Build Client Docker Image
 docker-compose build server # Build Server Docker Image
 docker-compose build database # Build Database Docker Image
 ```
+
+- Only run database container when needed
+
+```bash
+cd database
+docker-compose up -d # Only Start PostgreSQL17 Database Container (Detached mode)
+docker-compose down # Stop and remove database container
+```
+
+## Assumptions
+
+- User can run app in seed/reset mode to populate database with 50 sample contacts data.
+- In Contact Us page, First Name, Last Name, Email, Phone Number are required fields.
+- In Conact Us page, Message field is optional, and can be up to 500 characters long.
+- Phone Number is 1-20 characters long and can contain numbers, spaces, parentheses, and dashes.
+- Email is 1-100 characters long and must be a valid email address.
+- First Name and Last Name are 1-50 characters long.
+- Only data with same email and phone number combination is considered as the same contact, and not allowed to be created again.
+- In Contacts List page, data is fetched from the server with pagination 10 items per page and 5 items per page on small screens.
+- In Contacts List page, data is fetched from the server ordered by ID in descending order.
