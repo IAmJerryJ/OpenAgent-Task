@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "install:all": "npm install && npm run install:server && npm run install:client",
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:seed": "concurrently \"npm run dev:server:seed\" \"npm run dev:client\"",
     "dev:reset": "concurrently \"npm run dev:server:reset\" \"npm run dev:client\"",
